@@ -1,8 +1,12 @@
+# Define your username and password
+USERNAME="your_username"
+PASSWORD="your_password"
+
 # Update the system
 yum update -y
 
 # Install required packages
-yum install squid curl -y
+yum install squid curl httpd-tools -y
 
 # Remove the default Squid configuration file
 rm -f /etc/squid/squid.conf
@@ -13,6 +17,15 @@ wget --no-check-certificate -O /etc/squid/squid.conf https://raw.githubuserconte
 # Append the additional http_port configurations
 echo "http_port 9999" >> /etc/squid/squid.conf
 echo "http_port 6666" >> /etc/squid/squid.conf
+
+# Create a password file and add the user
+htpasswd -cb /etc/squid/passwd $USERNAME $PASSWORD
+
+# Add authentication to the Squid configuration
+echo "auth_param basic program /usr/lib64/squid/basic_ncsa_auth /etc/squid/passwd" >> /etc/squid/squid.conf
+echo "auth_param basic credentialsttl 2 hours" >> /etc/squid/squid.conf
+echo "acl authenticated proxy_auth REQUIRED" >> /etc/squid/squid.conf
+echo "http_access allow authenticated" >> /etc/squid/squid.conf
 
 # Check if firewalld is installed and running
 if ! command -v firewall-cmd &> /dev/null; then
@@ -51,4 +64,4 @@ fi
 PUBLIC_IP=$(curl -s http://ipinfo.io/ip)
 
 # Display completion message
-echo "DONE >> You can run Squid Proxy on ${PUBLIC_IP}:9999 and ${PUBLIC_IP}:6666"
+echo "DONE >> You can run Squid Proxy on ${PUBLIC_IP}:9999 and ${PUBLIC_IP}:6666 with credentials ${USERNAME}:${PASSWORD}"
