@@ -14,6 +14,14 @@ wget --no-check-certificate -O /etc/squid/squid.conf https://raw.githubuserconte
 echo "http_port 9999" >> /etc/squid/squid.conf
 echo "http_port 6666" >> /etc/squid/squid.conf
 
+# Check if firewalld is installed and running
+if ! command -v firewall-cmd &> /dev/null; then
+    echo "firewalld is not installed. Installing..."
+    yum install firewalld -y
+    systemctl start firewalld
+    systemctl enable firewalld
+fi
+
 # Start and enable the Squid service
 systemctl start squid
 systemctl enable squid
@@ -38,3 +46,8 @@ if [ "$(sestatus | grep 'SELinux status' | awk '{print $3}')" == "enabled" ]; th
 else
     echo "SELinux is not enabled."
 fi
+
+# Display completion message
+IP=$(hostname -I | awk '{print $1}')
+echo "DONE >> You can run Squid Proxy on ${IP}:9999 and ${IP}:6666"
+
