@@ -1,8 +1,8 @@
 # Update the system
 yum update -y
 
-# Install Squid
-yum install squid -y
+# Install required packages
+yum install squid curl -y
 
 # Remove the default Squid configuration file
 rm -f /etc/squid/squid.conf
@@ -47,7 +47,8 @@ else
     echo "SELinux is not enabled."
 fi
 
-# Display completion message
-IP=$(hostname -I | awk '{print $1}')
-echo "DONE >> You can run Squid Proxy on ${IP}:9999 and ${IP}:6666"
+# Get public IP address
+PUBLIC_IP=$(curl -s http://ipinfo.io/ip)
 
+# Display completion message
+echo "DONE >> You can run Squid Proxy on ${PUBLIC_IP}:9999 and ${PUBLIC_IP}:6666"
